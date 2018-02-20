@@ -2,6 +2,14 @@
 #include <list>
 using namespace std;
 
+// Address bits
+// <--------------TAGS------------->|<-------SET------>|<-------OFFSET----->|
+// A cache is divided into sets
+// Each set will have multiple address
+// Size of cache block is decided by offset bits
+// Set of cache block is decided by set bits
+// As multiple cache block will have same set bits, tag bits are used to locate the cache blocks
+
 // Size of address in bits
 #define ADDRESS_BITS 32
 
