@@ -1,37 +1,62 @@
 #include "cache_lru.hpp"
 
 const unsigned int CACHE_SIZE = 65535;
+const int SET_NUM = 2;
+const unsigned int SET_SIZE = CACHE_SIZE / SET_NUM;
+const int WCHISTORY_SIZE = 2;
+const int PWCBUFFER_SIZE = 1000;
+const int PATTERNFIFO_SIZE = WCHISTORY_SIZE + 1;
+
+void simplewcount::pushNew(const unsigned long& key, const unsigned int& value) {
+   pwcBuffMap.insert(std::make_pair(key, value));
+   pwcBuffQueue.push(key); 
+}
+
+void simplewcount::popOld(const unsigned long& key) {
+   pwcBuffMap.erase(key);
+   pwcBuffQueue.pop();
+}
 
 int main() {
-   simplecache::LruCache mycache(CACHE_SIZE);
+   using namespace simplewcount;
+   struct Cacheblock tempBlock;
+   LruCache mycache[SET_NUM](SET_SIZE);   
 
-   for (unsigned int i = 0; i < CACHE_SIZE; ++i) {
-   	mycache.put(i,i);
-   }
+   for (int j = 0; j < SET_NUM; ++j) {
 
-   if (mycache.size() == CACHE_SIZE)
-  	 printf("Cache size: %d\n", mycache.size());
-   else 
-	printf("WRONG CACHE SIZE");
-   
-   for (unsigned int i = 0; i < CACHE_SIZE-1; ++i) {
-   	mycache.get(i);
-   }
-   mycache.put(CACHE_SIZE+1, 7);
-   for (unsigned int i = 0; i < CACHE_SIZE; ++i) {
-	if(!mycache.exists(i)) {
-		printf("%d, NOT IN CACHE\n", i);
+	for (unsigned int i = 0; i < SET_SIZE; ++i) {
+		tempBlock.data = i;
+		mycache[j].put(i,tempBlock);
 	}
+
+	if (mycache[j].size() == SET_SIZE)
+		printf("Set: %d size: %d\n", j, mycache[j].size());
+	else 
+		printf("Set %d incorrect size", j);
+
+	for (unsigned int i = 0; i < SET_SIZE-1; ++i) {
+		mycache[j].get(i);
+	}
+
+	mycache[j].put(SET_SIZE+1, tempBlock);
+	for (unsigned int i = 0; i < SET_SIZE; ++i) {
+		if(!mycache[j].exists(i)) {
+			printf("Block %d not in set %d\n", i, j);
+		}
+	}
+
+	for (unsigned int i = 1; i < SET_SIZE-1; ++i) {
+		mycache[j].get(i);
+	}
+
+	mycache[j].put(SET_SIZE+2, tempBlock);
+	for (unsigned int i = 0; i < SET_SIZE; ++i) {
+		if(!mycache[j].exists(i)) {
+			printf("Block %d not in set %d\n", i, j);
+		}
+	}
+	printf("Set: %d, Key: 5, Data: %d\n", j, mycache[j].get(5).data);
    }
 
-   for (unsigned int i = 1; i < CACHE_SIZE-1; ++i) {
-   	mycache.get(i);
-   }
-   mycache.put(CACHE_SIZE+2, 7);
-   for (unsigned int i = 0; i < CACHE_SIZE; ++i) {
-	if(!mycache.exists(i)) {
-		printf("%d, NOT IN CACHE\n", i);
-	}
-   }
    return 0;
 }
