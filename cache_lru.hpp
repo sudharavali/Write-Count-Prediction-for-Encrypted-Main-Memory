@@ -79,6 +79,8 @@ void popOld();
 
 
 // Pattern buffer (patterBuff)
+/* Ajit: Using queue will not work. Queue does not allow seeing history ie previous 
+ * N pushes. A linked list should be more appropriate*/
 std::queue<unsigned long> patternBuffQueue; 
 
 } 
