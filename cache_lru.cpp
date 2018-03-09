@@ -1,11 +1,48 @@
 #include "cache_lru.hpp"
 
-const unsigned int CACHE_SIZE = 65535;
-const int SET_NUM = 2;
-const unsigned int SET_SIZE = CACHE_SIZE / SET_NUM;
-const int WCHISTORY_SIZE = 2;
-const int PWCBUFFER_SIZE = 1000;
-const int PATTERNFIFO_SIZE = WCHISTORY_SIZE + 1;
+void simplewcount::testCache() {
+
+   struct Cacheblock tempBlock {};
+   for (int j = 0; j < SET_NUM; ++j) {
+
+ 	std::cout << "SET: "  << j << std::endl;
+	
+	for (unsigned int i = 0; i < SET_SIZE; ++i) {
+		tempBlock.data = i;
+		mycache[j].put(i,tempBlock);
+	}
+
+	if (mycache[j].size() == SET_SIZE) {
+  	 	std::cout << "Set size "  << mycache[j].size() << std::endl;
+	} else { 
+		std::cout << "Incorrect set size"  << std::endl;
+	}
+
+	for (unsigned int i = 0; i < SET_SIZE-1; ++i) {
+		mycache[j].get(i);
+	}
+
+	mycache[j].put(SET_SIZE+1, tempBlock);
+	for (unsigned int i = 0; i < SET_SIZE; ++i) {
+		if(!mycache[j].exists(i)) {
+			std::cout << "Block " << i << " not in set" << std::endl;
+		}
+	}
+
+	for (unsigned int i = 1; i < SET_SIZE-1; ++i) {
+		mycache[j].get(i);
+	}
+
+	mycache[j].put(SET_SIZE+2, tempBlock);
+	for (unsigned int i = 0; i < SET_SIZE; ++i) {
+		if(!mycache[j].exists(i)) {
+			std::cout << "Block " << i << " not in set" << std::endl;
+		}
+	}
+	std::cout << "Key: 5, Data: " << mycache[j].get(5).data << std::endl;
+   }
+
+}
 
 void simplewcount::pushNew(const unsigned long& key, const unsigned int& value) {
    pwcBuffMap.insert(std::make_pair(key, value));
@@ -18,46 +55,33 @@ void simplewcount::popOld() {
    pwcBuffQueue.pop();
 }
 
+void simplewcount::fillMainMemory(std::string filename) {
+
+   unsigned long cacheLine;
+   std::string instrAddr, memOp, memAddr;   
+   struct Cacheblock tempBlock = {};
+   std::ifstream infile(filename);
+   std::string fileLine;
+   while (std::getline(infile, fileLine)) {
+        std::istringstream traces(fileLine);
+        traces >> instrAddr >> memOp >> memAddr;
+        
+  	std::cout << "Bytr address "  << memAddr << std::endl;
+
+        cacheLine = std::stoul(memAddr, nullptr, 16) / 64;
+        std::cout << "Cache line " << cacheLine << std::endl;
+	
+	mainMemory[cacheLine] = tempBlock;
+   }
+   std::cout << "# of unique lines: " << mainMemory.size() <<std::endl;
+} 
+
+
 int main() {
    using namespace simplewcount;
-   struct Cacheblock tempBlock;
-   LruCache mycache[SET_NUM](SET_SIZE);   
-
-   for (int j = 0; j < SET_NUM; ++j) {
-
-	for (unsigned int i = 0; i < SET_SIZE; ++i) {
-		tempBlock.data = i;
-		mycache[j].put(i,tempBlock);
-	}
-
-	if (mycache[j].size() == SET_SIZE)
-		printf("Set: %d size: %d\n", j, mycache[j].size());
-	else 
-		printf("Set %d incorrect size", j);
-
-	for (unsigned int i = 0; i < SET_SIZE-1; ++i) {
-		mycache[j].get(i);
-	}
-
-	mycache[j].put(SET_SIZE+1, tempBlock);
-	for (unsigned int i = 0; i < SET_SIZE; ++i) {
-		if(!mycache[j].exists(i)) {
-			printf("Block %d not in set %d\n", i, j);
-		}
-	}
-
-	for (unsigned int i = 1; i < SET_SIZE-1; ++i) {
-		mycache[j].get(i);
-	}
-
-	mycache[j].put(SET_SIZE+2, tempBlock);
-	for (unsigned int i = 0; i < SET_SIZE; ++i) {
-		if(!mycache[j].exists(i)) {
-			printf("Block %d not in set %d\n", i, j);
-		}
-	}
-	printf("Set: %d, Key: 5, Data: %d\n", j, mycache[j].get(5).data);
-   }
+   
+   fillMainMemory(FILE_NAME);
+   testCache();
 
    return 0;
 }

@@ -5,10 +5,23 @@
 #include <list>
 #include <stdexcept>
 #include <queue>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+
 
 namespace simplewcount {
 
+unsigned int CACHE_SIZE = 65535;
+const int SET_NUM = 2;
+const unsigned int SET_SIZE = CACHE_SIZE / SET_NUM;
+
 const int WCHISTORY_SIZE = 2;
+const int PWCBUFFER_SIZE = 1000; 
+const int PATTERNFIFO_SIZE = WCHISTORY_SIZE + 1;
+
+const std::string FILE_NAME = "addr_traces";
 
 struct Cacheblock {
 	unsigned int data;
@@ -68,7 +81,14 @@ class LruCache {
 
 
 // Main memory (mainMemory)
-std::unordered_map<unsigned long, int> mainMemory;
+std::unordered_map<unsigned long, Cacheblock> mainMemory;
+
+void fillMainMemory(std::string filename);
+
+// Cache($)
+LruCache mycache[SET_NUM](SET_SIZE);
+
+void testCache();
 
 // Predicted write count buffer (pwcBuff)
 std::queue<unsigned long> pwcBuffQueue; 
@@ -77,11 +97,8 @@ std::unordered_map<unsigned long, unsigned int> pwcBuffMap;
 void pushNew(const unsigned long& key, const unsigned int& value);
 void popOld();
 
-
 // Pattern buffer (patterBuff)
-/* Ajit: Using queue will not work. Queue does not allow seeing history ie previous 
- * N pushes. A linked list should be more appropriate*/
-std::queue<unsigned long> patternBuffQueue; 
+std::list<unsigned long> patternBuffQueue; 
 
 } 
 
