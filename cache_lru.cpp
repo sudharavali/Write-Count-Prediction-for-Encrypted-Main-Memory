@@ -12,7 +12,8 @@ void simplewcount::pushNew(const unsigned long& key, const unsigned int& value) 
    pwcBuffQueue.push(key); 
 }
 
-void simplewcount::popOld(const unsigned long& key) {
+void simplewcount::popOld() {
+   unsigned long key = pwcBuffQueue.front();
    pwcBuffMap.erase(key);
    pwcBuffQueue.pop();
 }

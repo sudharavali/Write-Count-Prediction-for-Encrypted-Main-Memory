@@ -75,7 +75,7 @@ std::queue<unsigned long> pwcBuffQueue;
 std::unordered_map<unsigned long, unsigned int> pwcBuffMap;
 
 void pushNew(const unsigned long& key, const unsigned int& value);
-void popOld(const unsigned long& key);
+void popOld();
 
 
 // Pattern buffer (patterBuff)
