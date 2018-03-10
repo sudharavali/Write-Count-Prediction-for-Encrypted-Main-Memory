@@ -1,87 +1,77 @@
 #include "cache_lru.hpp"
 
-void simplewcount::testCache() {
 
-   struct Cacheblock tempBlock {};
-   for (int j = 0; j < SET_NUM; ++j) {
-
- 	std::cout << "SET: "  << j << std::endl;
-	
-	for (unsigned int i = 0; i < SET_SIZE; ++i) {
-		tempBlock.data = i;
-		mycache[j].put(i,tempBlock);
-	}
-
-	if (mycache[j].size() == SET_SIZE) {
-  	 	std::cout << "Set size "  << mycache[j].size() << std::endl;
-	} else { 
-		std::cout << "Incorrect set size"  << std::endl;
-	}
-
-	for (unsigned int i = 0; i < SET_SIZE-1; ++i) {
-		mycache[j].get(i);
-	}
-
-	mycache[j].put(SET_SIZE+1, tempBlock);
-	for (unsigned int i = 0; i < SET_SIZE; ++i) {
-		if(!mycache[j].exists(i)) {
-			std::cout << "Block " << i << " not in set" << std::endl;
-		}
-	}
-
-	for (unsigned int i = 1; i < SET_SIZE-1; ++i) {
-		mycache[j].get(i);
-	}
-
-	mycache[j].put(SET_SIZE+2, tempBlock);
-	for (unsigned int i = 0; i < SET_SIZE; ++i) {
-		if(!mycache[j].exists(i)) {
-			std::cout << "Block " << i << " not in set" << std::endl;
-		}
-	}
-	std::cout << "Key: 5, Data: " << mycache[j].get(5).data << std::endl;
-   }
-
-}
-
-void simplewcount::pushNew(const unsigned long& key, const unsigned int& value) {
+void simplewcount::pushNew(const addr_t& key, const int& value) {
    pwcBuffMap.insert(std::make_pair(key, value));
    pwcBuffQueue.push(key); 
 }
 
 void simplewcount::popOld() {
-   unsigned long key = pwcBuffQueue.front();
+   addr_t key = pwcBuffQueue.front();
    pwcBuffMap.erase(key);
    pwcBuffQueue.pop();
 }
 
 void simplewcount::fillMainMemory(std::string filename) {
 
-   unsigned long cacheLine;
+   addr_t cacheLine;
    std::string instrAddr, memOp, memAddr;   
    struct Cacheblock tempBlock = {};
+
    std::ifstream infile(filename);
    std::string fileLine;
    while (std::getline(infile, fileLine)) {
         std::istringstream traces(fileLine);
-        traces >> instrAddr >> memOp >> memAddr;
-        
-  	std::cout << "Bytr address "  << memAddr << std::endl;
+        traces >> instrAddr >> memOp >> memAddr;  
 
         cacheLine = std::stoul(memAddr, nullptr, 16) / 64;
-        std::cout << "Cache line " << cacheLine << std::endl;
-	
+
+	tempBlock.wcActual = cacheLine % 10;	
 	mainMemory[cacheLine] = tempBlock;
    }
-   std::cout << "# of unique lines: " << mainMemory.size() <<std::endl;
 } 
+
+int simplewcount::getActualwc(const addr_t& key) {
+   
+   auto it = mainMemory.find(key);
+   if (it == mainMemory.end()) {
+   	throw std::range_error("NOT FOUND IN MM");		
+   }
+   else {
+	return it->second.wcActual; 
+   }
+
+}
+
 
 
 int main() {
    using namespace simplewcount;
    
    fillMainMemory(FILE_NAME);
-   testCache();
+
+   std::ifstream infile(FILE_NAME);
+   std::string fileLine;
+  
+   while (std::getline(infile, fileLine)) {
+        
+   	std::string instrAddr, memOp, memAddr;   
+	std::istringstream traces(fileLine);
+        traces >> instrAddr >> memOp >> memAddr;
+
+	//TODO get set bits
+   	unsigned long cacheLine;
+	cacheLine = std::stoul(memAddr, nullptr, 16) / 64;
+  	int cacheSet = 0;
+
+	//Check if exists in cache
+	if(!mycache[cacheSet].exists(cacheLine)) {
+		int actualWc = getActualwc(cacheLine);	
+	}
+
+	
+	
+   }
 
    return 0;
 }

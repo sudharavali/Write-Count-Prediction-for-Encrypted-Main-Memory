@@ -13,6 +13,8 @@
 
 namespace simplewcount {
 
+typedef unsigned long addr_t;
+
 unsigned int CACHE_SIZE = 65535;
 const int SET_NUM = 2;
 const unsigned int SET_SIZE = CACHE_SIZE / SET_NUM;
@@ -32,7 +34,7 @@ struct Cacheblock {
 
 class LruCache {
 	public:
-		typedef typename std::pair<unsigned long, struct Cacheblock> blockPair;
+		typedef typename std::pair<addr_t, struct Cacheblock> blockPair;
 		typedef typename std::list<blockPair>::iterator listIterator;
 
 		LruCache(unsigned int maxSize) :
@@ -43,7 +45,7 @@ class LruCache {
 			return cacheMap.size();
 		}
 
-		void put(const unsigned long& key, struct Cacheblock& value) {
+		void put(const addr_t& key, struct Cacheblock& value) {
 			auto it = cacheMap.find(key);
 			cacheList.push_front(blockPair(key, value));
 			if (it != cacheMap.end()) {
@@ -60,11 +62,11 @@ class LruCache {
 			}
 		}
 		
-		bool exists(const unsigned long& key) const {
+		bool exists(const addr_t& key) const {
 			return cacheMap.find(key) != cacheMap.end();
 		}
 
-		const struct Cacheblock& get(const unsigned long& key) {
+		const struct Cacheblock& get(const addr_t& key) {
 			auto it = cacheMap.find(key);
 			if (it == cacheMap.end()) {
 				throw std::range_error("NO SUCH KEY");
@@ -75,30 +77,31 @@ class LruCache {
 		}	
 	private:
 		std::list<blockPair> cacheList;
-		std::unordered_map<unsigned long, listIterator> cacheMap;
+		std::unordered_map<addr_t, listIterator> cacheMap;
 		unsigned int cachesize;
 };
 
 
-// Main memory (mainMemory)
-std::unordered_map<unsigned long, Cacheblock> mainMemory;
+//Main memory (mainMemory)
+std::unordered_map<addr_t, Cacheblock> mainMemory;
 
 void fillMainMemory(std::string filename);
+int getActualwc(const addr_t& key);
 
-// Cache($)
+//Cache($)
 LruCache mycache[SET_NUM](SET_SIZE);
 
 void testCache();
 
-// Predicted write count buffer (pwcBuff)
-std::queue<unsigned long> pwcBuffQueue; 
-std::unordered_map<unsigned long, unsigned int> pwcBuffMap;
+//Predicted write count buffer (pwcBuff)
+std::queue<addr_t> pwcBuffQueue; 
+std::unordered_map<addr_t, int> pwcBuffMap;
 
-void pushNew(const unsigned long& key, const unsigned int& value);
+void pushNew(const addr_t& key, const int& value);
 void popOld();
 
-// Pattern buffer (patterBuff)
-std::list<unsigned long> patternBuffQueue; 
+//Pattern buffer (patterBuff)
+std::list<addr_t> patternBuffQueue; 
 
 } 
 
