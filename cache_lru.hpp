@@ -9,21 +9,28 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <cmath>
 #include "parameter.hpp"
 
 
 namespace simplewcount {
 
 typedef unsigned long addr_t;
-
-unsigned int CACHE_SIZE = PARAM_CACHE_SIZE;
-const int SET_NUM = PARAM_SET_NUM;
-const unsigned int SET_SIZE = CACHE_SIZE / SET_NUM;
-
+// Size of LLC
+const unsigned int CACHE_SIZE = PARAM_CACHE_SIZE;
+//Number of cache lines stored in a set
+const int SET_SIZE = PARAM_SET_SIZE;
+//Number of sets
+const int SET_NUM = CACHE_SIZE / SET_SIZE;
+//Size ofset bits
+const int SET_BITS = floor(log(SET_NUM)/log(2));
+//Size of write count history
 const int WCHISTORY_SIZE = PARAM_WCHISTORY_SIZE;
+//Size of pattern FIFO
 const int PATTERNFIFO_SIZE = WCHISTORY_SIZE + 1;
-
+//Range of write count predictions
 const int PREDICT_RANGE = PARAM_PREDICT_RANGE;
+//Size of pwc buffer
 const int PWCBUFFER_SIZE = WCHISTORY_SIZE * PREDICT_RANGE; 
 
 const std::string FILE_NAME = "addr_traces";
@@ -41,7 +48,7 @@ class LruCache {
 		typedef typename std::list<blockPair>::iterator listIterator;
 
 		LruCache() :
-			cachesize(CACHE_SIZE) {
+			cachesize(SET_SIZE) {
 		}
 		
 		unsigned int size() const {
@@ -118,6 +125,9 @@ class LruCache {
 };
 
 
+//
+void initMask(); 
+
 //Main memory (mainMemory)
 std::unordered_map<addr_t, Cacheblock> mainMemory;
 
@@ -139,15 +149,12 @@ std::unordered_map<addr_t, int> pwcBuffMap;
 void pushNew(const addr_t& key, const int& value);
 void popOld();
 
-//Pattern buffer (patterBuff)
+//Pattern buffer (patternBuff)
 std::list<std::pair<addr_t, int>> patternBuffQueue; 
 
 void updatePattern(const addr_t& key, const int& wc);
 void printPattern();
 
-//Coverage = corretPredict/totalPredict
-extern int totalPredict;
-extern int correctPredict;
 
 } 
 

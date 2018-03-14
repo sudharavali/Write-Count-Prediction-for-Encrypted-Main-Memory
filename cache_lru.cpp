@@ -1,5 +1,15 @@
 #include "cache_lru.hpp"
 
+namespace simplewcount {
+   addr_t maskSet;
+}
+
+void simplewcount::initMask(){
+   maskSet = 0x0;
+   for (int i = 0; i < SET_BITS; i++) {
+	maskSet = maskSet | (0x1 << i );
+   }
+}
 
 void simplewcount::putinCache(const int& set, const addr_t& key, const struct Cacheblock& block) {
 	
@@ -101,7 +111,8 @@ void simplewcount::updatePattern(const addr_t& key, const int& wc) {
 	patternBuffQueue.pop_back();
 
 	//Find set
-	int set = 0;
+  	std::cout << maskSet << std::endl;  
+	addr_t set = last.first & maskSet;
 	if (mycache[set].exists(last.first)) {
 		struct Cacheblock tempBlock = mycache[set].getOld(last.first);
 		int i = 0;
@@ -109,7 +120,7 @@ void simplewcount::updatePattern(const addr_t& key, const int& wc) {
 			tempBlock.wcHistory[i] = it->second;
                         i++;
 			//TODO Ask if we update dirty status.
-			tempBlock.isDrity = 1;
+			tempBlock.isDirty = 1;
 		}
 		mycache[set].putOld(last.first, tempBlock);
 	}
@@ -124,6 +135,9 @@ void simplewcount::updatePattern(const addr_t& key, const int& wc) {
 int main() {
    using namespace simplewcount;
    
+   initMask();
+   std::cout << maskSet << std::endl;  
+ 
    fillMainMemory(FILE_NAME);
    printMainMemory();
    
@@ -144,7 +158,7 @@ int main() {
         unsigned long cacheLine;
         cacheLine = std::stoul(memAddr, nullptr, 16) / 64;
         //Create a mask(parameter) AND it with cacheline
-        int cacheSet = 0;
+        int cacheSet = cacheLine & maskSet;
 
         //Check if exists in cache
         if(!mycache[cacheSet].exists(cacheLine)) {
@@ -174,19 +188,19 @@ int main() {
                 }
 
 		struct Cacheblock tempBlock = getBlock(cacheLine);
-                /*Check this: Doing twice*/
+	
 		if (memOp == "W") {
 			tempBlock.isDirty = 1;
 		}	
 		//Put block in cache	
 		putinCache(cacheSet, cacheLine, tempBlock);
-		//Put pwc buffer
+		//Put pwc in PWCbuffer
 		for (int i = 0; i < WCHISTORY_SIZE; ++i) {
 			for (int j = 0; j <= PREDICT_RANGE; ++j) {
 				pwcBuffQueue.push(tempBlock.wcHistory[i] + j);
 			}
-		}	
-		//TODO pattern buffer logic
+		}
+	
 		printPattern();
 		updatePattern(cacheLine, actualWc);
         }
