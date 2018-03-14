@@ -9,20 +9,21 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include "parameter.hpp"
 
 
 namespace simplewcount {
 
 typedef unsigned long addr_t;
 
-unsigned int CACHE_SIZE = 3;
-const int SET_NUM = 1;
+unsigned int CACHE_SIZE = PARAM_CACHE_SIZE;
+const int SET_NUM = PARAM_SET_NUM;
 const unsigned int SET_SIZE = CACHE_SIZE / SET_NUM;
 
-const int WCHISTORY_SIZE = 1;
+const int WCHISTORY_SIZE = PARAM_WCHISTORY_SIZE;
 const int PATTERNFIFO_SIZE = WCHISTORY_SIZE + 1;
 
-const int PREDICT_RANGE = 2;
+const int PREDICT_RANGE = PARAM_PREDICT_RANGE;
 const int PWCBUFFER_SIZE = WCHISTORY_SIZE * PREDICT_RANGE; 
 
 const std::string FILE_NAME = "addr_traces";
