@@ -23,8 +23,9 @@ void simplewcount::updateDirty(const std::string& op, const int& set, const addr
    struct Cacheblock tempBlock = mycache[set].get(key);
    if (op == "W") {
    	tempBlock.isDirty = 1;
-	mycache[set].put(key, tempBlock);
    }
+   //Even in case of READ we need to update LRU
+   mycache[set].put(key, tempBlock);
 }
 
 void simplewcount::fillMainMemory(std::string filename) {
@@ -106,8 +107,9 @@ void simplewcount::updatePattern(const addr_t& key, const int& wc) {
 		int i = 0;
 		for (auto it = patternBuffQueue.crbegin(); it != patternBuffQueue.crend(); ++it) {	
 			tempBlock.wcHistory[i] = it->second;
+                        i++;
 			//TODO Ask if we update dirty status.
-			//tempBlock.isDrity = 1;
+			tempBlock.isDrity = 1;
 		}
 		mycache[set].putOld(last.first, tempBlock);
 	}
@@ -141,6 +143,7 @@ int main() {
         //TODO get set bits
         unsigned long cacheLine;
         cacheLine = std::stoul(memAddr, nullptr, 16) / 64;
+        //Create a mask(parameter) AND it with cacheline
         int cacheSet = 0;
 
         //Check if exists in cache
@@ -154,7 +157,12 @@ int main() {
 			std::cout << "pwc buffer not empty" << std::endl;
 			//Compare predicted wc and actual wc
                         int predictStatus = 0;
-                        for (int i = 0; i <= PREDICT_RANGE; ++i) {
+                        /* Read the PWCbuffer, check if predition matches actual
+                         * If yes update coverage
+                         * Either case flush the buffer*/
+                        /* TODO check how many times prediction was correct
+                         * Can be used to tell longer history sizes work*/
+                        for (int i = 0; i <= PWCBUFFER_SIZE; ++i) {
                                 if ((actualWc ==  pwcBuffQueue.front()) && (!predictStatus)) {
 					std::cout << "A: " << actualWc << " P: " << pwcBuffQueue.front() << std::endl;
                                         predictStatus = 1;
@@ -166,6 +174,7 @@ int main() {
                 }
 
 		struct Cacheblock tempBlock = getBlock(cacheLine);
+                /*Check this: Doing twice*/
 		if (memOp == "W") {
 			tempBlock.isDirty = 1;
 		}	
