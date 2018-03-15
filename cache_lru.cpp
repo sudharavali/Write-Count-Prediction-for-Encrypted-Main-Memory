@@ -226,8 +226,10 @@ int main() {
 #endif
 	printMainMemory();
    }
-   std::cout << "Correct: " << correctPredict << std::endl;
-   std::cout << "Total: " << totalPredict << std::endl;
+   std::cout << "PASS" << std::endl;
+   std::cout << "Summary: ";
+   std::cout << "CorrectPrediction=" << correctPredict;
+   std::cout << " TotalPrediction=" << totalPredict << std::endl;
 
    return 0;
 }
