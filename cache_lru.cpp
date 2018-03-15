@@ -54,10 +54,13 @@ void simplewcount::fillMainMemory(std::string filename) {
 
 	mainMemory[cacheLine] = tempBlock;
    }
+#ifdef DEBUG
    std::cout << "# of unique lines: " << mainMemory.size() << std::endl << std::endl;
+#endif
 } 
 
 void simplewcount::printMainMemory() {
+#ifdef DEBUG
    for (auto it : mainMemory) {
 	std::cout << it.first << "| wcA: " << it.second.wcActual << ", wcH: ";
 	for (int i = 0; i < WCHISTORY_SIZE; ++i) {
@@ -65,6 +68,7 @@ void simplewcount::printMainMemory() {
 	}
    std::cout << std::endl;
    }
+#endif
 }
 
 
@@ -95,10 +99,12 @@ struct simplewcount::Cacheblock simplewcount::getBlock(const addr_t& key) {
 }
 
 void simplewcount::printPattern() {
+#ifdef DEBUG
    std::cout << "Pattern buffer" << std::endl;
    for (auto it = patternBuffQueue.cbegin(); it != patternBuffQueue.cend(); ++it) {	
 	std::cout <<  it->first << ", " << it->second << std::endl;
-   } 
+   }
+#endif
 	
 }
 
@@ -111,7 +117,9 @@ void simplewcount::updatePattern(const addr_t& key, const int& wc) {
 	patternBuffQueue.pop_back();
 
 	//Find set
+#ifdef DEBUG
   	std::cout << maskSet << std::endl;  
+#endif
 	addr_t set = last.first & maskSet;
 	if (mycache[set].exists(last.first)) {
 		struct Cacheblock tempBlock = mycache[set].getOld(last.first);
@@ -136,7 +144,9 @@ int main() {
    using namespace simplewcount;
    
    initMask();
+#ifdef DEBUG
    std::cout << maskSet << std::endl;  
+#endif
  
    fillMainMemory(FILE_NAME);
    printMainMemory();
@@ -168,7 +178,9 @@ int main() {
                 //Check that pwc buffer is not empty
                 if (!pwcBuffQueue.empty()) {
 		
+#ifdef DEBUG
 			std::cout << "pwc buffer not empty" << std::endl;
+#endif
 			//Compare predicted wc and actual wc
                         int predictStatus = 0;
                         /* Read the PWCbuffer, check if predition matches actual
@@ -178,7 +190,9 @@ int main() {
                          * Can be used to tell longer history sizes work*/
                         for (int i = 0; i <= PWCBUFFER_SIZE; ++i) {
                                 if ((actualWc ==  pwcBuffQueue.front()) && (!predictStatus)) {
+#ifdef DEBUG
 					std::cout << "A: " << actualWc << " P: " << pwcBuffQueue.front() << std::endl;
+#endif
                                         predictStatus = 1;
                                 }
                                 pwcBuffQueue.pop();
@@ -206,11 +220,14 @@ int main() {
         }
 	//Update dirty status
 	updateDirty (memOp, cacheSet, cacheLine);	
-
+#ifdef DEBUG
 	std::cout << "Correct # of predictions: " << correctPredict << std::endl;
    	std::cout << "Total # of predictions: " << totalPredict << std::endl << std::endl;
+#endif
 	printMainMemory();
    }
+   std::cout << "Correct: " << correctPredict << std::endl;
+   std::cout << "Total: " << totalPredict << std::endl;
 
    return 0;
 }
