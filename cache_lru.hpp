@@ -16,13 +16,13 @@
 namespace simplewcount {
 
 typedef unsigned long addr_t;
-// Size of LLC
+// Total number of cache lines in Cache
 const unsigned int CACHE_SIZE = PARAM_CACHE_SIZE;
 //Number of cache lines stored in a set
 const int SET_SIZE = PARAM_SET_SIZE;
 //Number of sets
 const int SET_NUM = CACHE_SIZE / SET_SIZE;
-//Size ofset bits
+//Size of set bits
 const int SET_BITS = floor(log(SET_NUM)/log(2));
 //Size of write count history
 const int WCHISTORY_SIZE = PARAM_WCHISTORY_SIZE;
@@ -155,7 +155,7 @@ std::list<std::pair<addr_t, int>> patternBuffQueue;
 void updatePattern(const addr_t& key, const int& wc);
 void printPattern();
 
-
+extern addr_t maskSet;
 } 
 
 #endif	/* CACHE_LRU_HPP */

@@ -2,7 +2,9 @@ import os, sys, re, os.path
 import subprocess, datetime, time, signal
 
 parameter_file = ["parameter_std.hpp", "parameter.hpp"]
-
+# Cache Size
+# History Size
+# Set Size
 csize = [2, 4, 8]
 def replace(filename, pattern, replacement):
     f = open(filename)
