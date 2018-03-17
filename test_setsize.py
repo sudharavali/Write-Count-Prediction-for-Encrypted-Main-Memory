@@ -53,15 +53,9 @@ def run_test():
     cmd = "./cacheModel"
     start = datetime.datetime.now()
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    timeout = 10
     while process.poll() is None:
         time.sleep(1)
         now = datetime.datetime.now()
-        if (now - start).seconds > timeout:
-            os.kill(process.pid, signal.SIGKILL)
-            os.waitpid(-1, os.WHOHANG)
-            print "ERROR: Timeout cmd=%s" %cmd
-            exit(0)
     
     stdout = process.stdout.readlines()
     PASS = False

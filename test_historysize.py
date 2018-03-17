@@ -20,9 +20,9 @@ def replace(filename, pattern, replacement):
 def insert_job(jobs, param):
     insert_job.counter += 1
     jobs[insert_job.counter] = {
-            "PARAM_CACHE_SIZE" : "512",
+            "PARAM_CACHE_SIZE" : "32768",
             "PARAM_WCHISTORY_SIZE" : param,
-            "PARAM_SET_SIZE" : "4",
+            "PARAM_SET_SIZE" : "16",
             }
 
 def compile(job):
@@ -53,15 +53,9 @@ def run_test():
     cmd = "./cacheModel"
     start = datetime.datetime.now()
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    timeout = 10
     while process.poll() is None:
         time.sleep(1)
         now = datetime.datetime.now()
-        if (now - start).seconds > timeout:
-            os.kill(process.pid, signal.SIGKILL)
-            os.waitpid(-1, os.WHOHANG)
-            print "ERROR: Timeout cmd=%s" %cmd
-            exit(0)
     
     stdout = process.stdout.readlines()
     PASS = False
