@@ -1,11 +1,13 @@
 import os, sys, re, os.path
 import subprocess, datetime, time, signal
+import matplotlib.pyplot as plt
 
 parameter_file = ["parameter_std.hpp", "parameter.hpp"]
+predictRate = []
 # Cache Size
 # History Size
 # Set Size
-csize = [2, 4, 8]
+parameter = [1,2,3,4]
 def replace(filename, pattern, replacement):
     f = open(filename)
     s = f.read()
@@ -15,10 +17,12 @@ def replace(filename, pattern, replacement):
     f.write(s)
     f.close()
 
-def insert_job(jobs, cache_size):
+def insert_job(jobs, param):
     insert_job.counter += 1
     jobs[insert_job.counter] = {
-            "PARAM_CACHE_SIZE" : cache_size,
+            "PARAM_CACHE_SIZE" : "512",
+            "PARAM_WCHISTORY_SIZE" : param,
+            "PARAM_SET_SIZE" : "4",
             }
 
 def compile(job):
@@ -34,7 +38,16 @@ def compile(job):
         print job
         exit(0)
 
-    print "PASS Compile\t\tcache_size=%s" %(job['PARAM_CACHE_SIZE'])
+    print "PASS Compile\t\thistory size=%s" %(job['PARAM_WCHISTORY_SIZE'])
+
+def plotgraph(parameter):
+    fig = plt.figure()
+    title = "Prediction_vs_HistorySize"
+    ax = fig.add_subplot(111)
+    ax.plot(parameter, predictRate, marker='o')
+    ax.set_ylabel('Total Cache Lines')
+    ax.set_xlabel('WC History Size')
+    fig.savefig(title+'.png')
 
 def run_test():
     cmd = "./cacheModel"
@@ -57,10 +70,11 @@ def run_test():
             print "Execution PASS"
             PASS = True
         if PASS and "Summary:" in line:
-            correctPrediction = int(re.search("(?<=CorrectPrediction=)[0-9]*", line).group(0))
-            totalPrediction = int(re.search("(?<=TotalPrediction=)[0-9]*", line).group(0))
-            print correctPrediction
-            print totalPrediction
+            correctPrediction = float(re.search("(?<=CorrectPrediction=)[0-9]*", line).group(0))
+            totalPrediction = float(re.search("(?<=TotalPrediction=)[0-9]*", line).group(0))
+            rate = correctPrediction/totalPrediction * 100
+            predictRate.append(rate)
+
             return
     print "FAILED execution"
     exit(0)
@@ -77,10 +91,11 @@ def run_benchmark():
     insert_job.counter = 0
     jobs = {}
 
-    for size in csize:
-        insert_job(jobs, size)
+    for param in parameter:
+        insert_job(jobs, param)
 
     run_all(jobs)
+    plotgraph(parameter)
     os.system('make clean > temp.out 2>&1')
     os.system('rm -rf temp.out')
 
