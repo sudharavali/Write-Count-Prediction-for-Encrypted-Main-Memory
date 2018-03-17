@@ -158,12 +158,9 @@ int main() {
 
    std::ifstream infile(FILE_NAME);
    std::string fileLine;
-   unsigned long long countTemp = 0;
+
    while (std::getline(infile, fileLine)) {
-        if (countTemp % 100000 == 0) {
-		std::cout << "Count: " << countTemp << std::endl;
-	}
-		
+
         std::string memOp, memAddr;
         std::istringstream traces(fileLine);
         traces >> memOp >> memAddr;
@@ -229,7 +226,6 @@ int main() {
    	std::cout << "Total # of predictions: " << totalPredict << std::endl << std::endl;
 #endif
 	printMainMemory();
-	countTemp++;
    }
    std::cout << "PASS" << std::endl;
    std::cout << "Summary: ";
