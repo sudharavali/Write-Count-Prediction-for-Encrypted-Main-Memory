@@ -33,8 +33,9 @@ const int PREDICT_RANGE = PARAM_PREDICT_RANGE;
 //Size of pwc buffer
 const int PWCBUFFER_SIZE = WCHISTORY_SIZE * PREDICT_RANGE; 
 
-const std::string FILE_NAME = "addrtrace/spec2017";
-//const std::string FILE_NAME = "addr_traces";
+const std::string FILE_NAME = "addrtrace/pintrace_0.txt";
+//const std::string FILE_NAME = "addrtrace/spec2017";
+//const std::string FILE_NAME = "addrtrace/test_traces";
 
 struct Cacheblock {
 	unsigned int data;

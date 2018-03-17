@@ -41,19 +41,20 @@ void simplewcount::updateDirty(const std::string& op, const int& set, const addr
 void simplewcount::fillMainMemory(std::string filename) {
 
    addr_t cacheLine;
-   std::string instrAddr, memOp, memAddr;   
+   std::string memOp, memAddr;   
    struct Cacheblock tempBlock = {};
 
    std::ifstream infile(filename);
    std::string fileLine;
    while (std::getline(infile, fileLine)) {
         std::istringstream traces(fileLine);
-        traces >> instrAddr >> memOp >> memAddr;
+        traces >> memOp >> memAddr;
         
         cacheLine = std::stoul(memAddr, nullptr, 16) / 64;
 
 	mainMemory[cacheLine] = tempBlock;
    }
+   std::cout << "# of unique lines: " << mainMemory.size() << std::endl << std::endl;
 #ifdef DEBUG
    std::cout << "# of unique lines: " << mainMemory.size() << std::endl << std::endl;
 #endif
@@ -160,9 +161,9 @@ int main() {
 
    while (std::getline(infile, fileLine)) {
 
-        std::string instrAddr, memOp, memAddr;
+        std::string memOp, memAddr;
         std::istringstream traces(fileLine);
-        traces >> instrAddr >> memOp >> memAddr;
+        traces >> memOp >> memAddr;
 
         //TODO get set bits
         unsigned long cacheLine;
