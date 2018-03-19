@@ -23,6 +23,7 @@ def insert_job(jobs, param):
             "PARAM_CACHE_SIZE" : "32768",
             "PARAM_WCHISTORY_SIZE" : param,
             "PARAM_SET_SIZE" : "16",
+            "PARAM_PREDICT_RANGE" : "2",
             }
 
 def compile(job):

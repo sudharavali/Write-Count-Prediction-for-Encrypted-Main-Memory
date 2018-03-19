@@ -189,7 +189,7 @@ int main() {
                          * Either case flush the buffer*/
                         /* TODO check how many times prediction was correct
                          * Can be used to tell longer history sizes work*/
-                        for (int i = 0; i <= PWCBUFFER_SIZE; ++i) {
+                        while(!pwcBuffQueue.empty()) {
                                 if ((actualWc ==  pwcBuffQueue.front()) && (!predictStatus)) {
 #ifdef DEBUG
 					std::cout << "A: " << actualWc << " P: " << pwcBuffQueue.front() << std::endl;

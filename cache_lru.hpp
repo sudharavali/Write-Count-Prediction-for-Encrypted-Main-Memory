@@ -30,8 +30,6 @@ const int WCHISTORY_SIZE = PARAM_WCHISTORY_SIZE;
 const int PATTERNFIFO_SIZE = WCHISTORY_SIZE + 1;
 //Range of write count predictions
 const int PREDICT_RANGE = PARAM_PREDICT_RANGE;
-//Size of pwc buffer
-const int PWCBUFFER_SIZE = WCHISTORY_SIZE * PREDICT_RANGE; 
 
 const std::string FILE_NAME = "addrtrace/pintrace_0.txt";
 //const std::string FILE_NAME = "addrtrace/spec2017";
