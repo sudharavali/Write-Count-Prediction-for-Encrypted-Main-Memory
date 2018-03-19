@@ -7,7 +7,7 @@ predictRate = []
 # Cache Size
 # History Size
 # Set Size
-parameter = [1,2,4,8]
+parameter = [1,2,4,8,16]
 def replace(filename, pattern, replacement):
     f = open(filename)
     s = f.read()
@@ -20,9 +20,10 @@ def replace(filename, pattern, replacement):
 def insert_job(jobs, param):
     insert_job.counter += 1
     jobs[insert_job.counter] = {
-            "PARAM_CACHE_SIZE" : "512",
-            "PARAM_WCHISTORY_SIZE" : "2",
+            "PARAM_CACHE_SIZE" : "32768",
+            "PARAM_WCHISTORY_SIZE" : "1",
             "PARAM_SET_SIZE" : param,
+            "PARAM_PREDICT_RANGE" : "1",
             }
 
 def compile(job):
