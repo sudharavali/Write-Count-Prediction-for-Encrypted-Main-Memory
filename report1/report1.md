@@ -33,9 +33,9 @@ To create a memory system to predict the write count of a memory location before
 The design is divided into three main component:
 
 - **Main Memory**
-- **Cache**
-- **Predicted Write Count Buffer** (pwcBuf)
-- **Patter Fifo**
+- **Cache with Write History Holder**
+- **Predicted Write Count Buffer** (pwcBuf): This buffer stores the predicted write count. On a cache miss, the buffer is read and compared to actual write count
+- **Pattern Fifo**: This is used to keep track of cache miss history.
 
 
 
@@ -83,7 +83,51 @@ def putinCache(A):
 
 
 
+### Parameters
+
+Our model is completely parameterized. The parameters we chose to analyse our design are:
+
+- **Write Count History Size**: This determines the size of *write count history holder (WCHH)*.
+- **Range Size**: This determines the range of predicted write count history. For example if write count of **B** according to **WCHH** of  **A** is n, the n to n+r values will be used to predict the write count of B.
+- **Set Size**: This determines the number of cache line that can be stored in on cache set.
+
 ### Results
+
+We ran our model on **NAS Parallel Benchmark** for three different workloads.
+
+#### Conjugate Gradient
+
+**Prediction Rate vs History Size:**
+
+![rediction_vs_HistorySiz](../cg_pintrace2/Prediction_vs_HistorySize.png)
+
+**Prediction Rate vs Range Size:**
+
+<img src="../cg_pintrace2/Prediction_vs_RangeSize.png" height="430px"/>
+
+**Prediction Rate vs Set Size:**
+
+<img src="../cg_pintrace2/Prediction_vs_SetSize.png" height="450px"/>
+
+#### Embarrassingly Parallel
+
+**Prediction Rate vs History Size:**
+
+<img src="../ep_plots/Prediction_vs_HistorySize.png" height="430px"/>
+
+**Prediction Rate vs Range Size:**
+
+<img src="../ep_plots/Prediction_vs_RangeSize.png" height="430px"/>
+
+**Prediction Rate vs Set Size:**
+
+<img src="../ep_plots/Prediction_vs_SetSize.png" height="430px"/>
+
+
+
+#### Multi-Grid
+
+
 
 ### Analysis
 
