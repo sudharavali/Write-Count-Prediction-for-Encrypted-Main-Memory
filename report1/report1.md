@@ -124,11 +124,30 @@ We ran our model on **NAS Parallel Benchmark** for three different workloads.
 <img src="../ep_plots/Prediction_vs_SetSize.png" height="430px"/>
 
 
-
 #### Multi-Grid
+
+**Prediction Rate vs History Size:**
+
+<img src="../mg_plots/Prediction_vs_HistorySize.png" height="430px"/>
+
+**Prediction Rate vs Range Size:**
+
+<img src="../mg_plots/Prediction_vs_RangeSize.png" height="430px"/>
+
+**Prediction Rate vs Set Size:**
+
+<img src="../mg_plots/Prediction_vs_SetSize.png" height="430px"/>
+
+
 
 
 
 ### Analysis
+
+#### Interpreting Results
+
+#### Cost Analysis
+
+####Future Optimization
 
 ### Conclusion
