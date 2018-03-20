@@ -30,13 +30,12 @@ To create a memory system to predict the write count of a memory location before
 
 ### Design
 
-The design is divided into three main component:
+The design is divided into four main components:
 
-- **Main Memory**
-- **Cache with Write History Holder**
-- **Predicted Write Count Buffer** (pwcBuf): This buffer stores the predicted write count. On a cache miss, the buffer is read and compared to actual write count
+- **Main Memory**: Simulation model of the main memory that stores all address blocks from the address trace file.
+- **Cache with Write History Holder**: 2MB LLC with a LRU replacement policy and n-way set associativity (n is an adjustable parameter in the model). 
 - **Pattern Fifo**: This is used to keep track of cache miss history.
-
+- **Predicted Write Count Buffer** (pwcBuf): This buffer stores the predicted write count. On a cache miss, the buffer is read and compared to actual write count
 
 
 
@@ -55,7 +54,7 @@ The design is divided into three main component:
 
 ```flow
 st=>start: Fetch A
-op=>operation: Check in pwcBuf
+op=>operation: Check in pwcBuf and compare
 op1=>operation: update coverage
 op2=>operation: Put A in $
 op3=>operation: Find element to evict(E)
@@ -89,15 +88,25 @@ Our model is completely parameterized. The parameters we chose to analyse our de
 
 - **Write Count History Size**: This determines the size of *write count history holder (WCHH)*.
 - **Range Size**: This determines the range of predicted write count history. For example if write count of **B** according to **WCHH** of  **A** is n, the n to n+r values will be used to predict the write count of B.
-- **Set Size**: This determines the number of cache line that can be stored in on cache set.
+- **Set Size**: This determines the number of cache lines that can be stored in on cache set (n-way set associativity).
 
 ### Results
 
-We ran our model on **NAS Parallel Benchmark** for three different workloads.
+We ran our model on **NAS Parallel Benchmark** for three different workloads: 
+
+CG - Conjugate Gradient benchmark computes an estimate of the largest eigenvalue of a symmetric positive definite sparse matrix with a random patter of nonzeros [1]. 
+
+MG - Multi-Grid benchmark performs four iteration of the V-cycle multigrid algorithm to obtain an approximate solution to Poisson equation  [1].
+
+EP - Embarrassingly Parallel benchmark generates pairs of Gaussian random deviates and tabulates the number of pairs in successive square annuli [1].
+
+
 
 #### Conjugate Gradient
 
 **Prediction Rate vs History Size:**
+
+*Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines.*
 
 ![rediction_vs_HistorySiz](../cg_pintrace2/Prediction_vs_HistorySize.png)
 
@@ -111,6 +120,8 @@ We ran our model on **NAS Parallel Benchmark** for three different workloads.
 
 #### Embarrassingly Parallel
 
+*Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines*
+
 **Prediction Rate vs History Size:**
 
 <img src="../ep_plots/Prediction_vs_HistorySize.png" height="430px"/>
@@ -123,8 +134,9 @@ We ran our model on **NAS Parallel Benchmark** for three different workloads.
 
 <img src="../ep_plots/Prediction_vs_SetSize.png" height="430px"/>
 
-
 #### Multi-Grid
+
+*Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines.*
 
 **Prediction Rate vs History Size:**
 
@@ -146,8 +158,11 @@ We ran our model on **NAS Parallel Benchmark** for three different workloads.
 
 #### Interpreting Results
 
+Our write count prediction model shows fairly good results for Conjugate Gradient and Embarrassingly Parallel benchmarks. CG shows the best results with more than 70% coverage rate for all parameters. Increasing the write count history size (WCHH size) from 1 to 10 results in almost 14% increase in coverage, and increasing the range size from 1 to 10 results in more than 15% increase in coverage. Changing the value of associativity/set size from 1 (direct mapped) to 16 does not have any major effect on coverage. 
+
 #### Cost Analysis
 
 ####Future Optimization
 
 ### Conclusion
+
