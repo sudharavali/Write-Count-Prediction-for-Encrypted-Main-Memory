@@ -1,7 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-#define LIST_SIZE 1000000
+#define LIST_SIZE 100000
 
 typedef struct node{
         int val;
