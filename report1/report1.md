@@ -5,18 +5,16 @@
 ### Team Members
 
 - Ajit Mathew
-- Daulet 
+- Daulet Talapkaliyev
+- Pranavi Rambhakta
 - Sudha Ravali
-- Pranavi
-- Xiaolong
+- Xiaolong Li
 
 
 
 ### Objective
 
-To create a memory system to predict the write count of a memory location before the location is actually fetched into the main memory.
-
-
+Create a memory system to predict the write count of a memory location before the location is actually fetched from the main memory.
 
 ### Task
 
@@ -26,7 +24,7 @@ To create a memory system to predict the write count of a memory location before
 - **Implement Prediction Algorithm based on the history**
 - **Vary parameters to find optimal prediction coverage.**
 
-*Note: Tasks in bold has been completed successfully*
+*Note: Tasks in bold have been completed successfully*
 
 
 
@@ -34,8 +32,8 @@ To create a memory system to predict the write count of a memory location before
 
 To predict the write count of a memory block:
 
-- Firstly, we should be able to **predict the address of the memory block before the actual access**
-- Secondly, we should be able to make an **intelligent guess about the write count** of the address which will be accessed
+- Firstly, model should be able to **predict the address of the memory block before the actual access**
+- Secondly, model should be able to make an **intelligent guess about the write count** of the address which will be accessed
 
 ### Design
 
@@ -68,6 +66,14 @@ cond1(no)->op(right)->op1
 op1->cond3(yes)->op3->op4->op2
 cond3(no)->op2->e1
 ```
+
+
+
+
+
+
+
+
 
 
 
@@ -105,13 +111,17 @@ Our model is completely parameterized. The parameters we chose to analyse our de
 
 We ran our model on **NAS Parallel Benchmark** for three different workloads: 
 
-CG - Conjugate Gradient benchmark computes an estimate of the largest eigenvalue of a symmetric positive definite sparse matrix with a random patter of nonzeros [1]. 
+CG - **Conjugate Gradient benchmark** computes an estimate of the largest eigenvalue of a symmetric positive definite sparse matrix with a random patter of nonzeros [1]. 
 
-MG - Multi-Grid benchmark performs four iteration of the V-cycle multigrid algorithm to obtain an approximate solution to Poisson equation  [1].
+MG - **Multi-Grid benchmark** performs four iteration of the V-cycle multigrid algorithm to obtain an approximate solution to Poisson equation  [1].
 
-EP - Embarrassingly Parallel benchmark generates pairs of Gaussian random deviates and tabulates the number of pairs in successive square annuli [1].
+EP - **Embarrassingly Parallel benchmark** generates pairs of Gaussian random deviates and tabulates the number of pairs in successive square annuli [1].
 
-*Note: NAS Parallel Benchmark address traces were take from Team ? *
+*Note: NAS Parallel Benchmark address traces were take from Team 2*
+
+
+
+
 
 
 
@@ -121,7 +131,7 @@ EP - Embarrassingly Parallel benchmark generates pairs of Gaussian random deviat
 
 *Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines.*
 
-![rediction_vs_HistorySiz](../cg_pintrace2/Prediction_vs_HistorySize.png)
+<img src="../cg_pintrace2/Prediction_vs_HistorySize.png" height="400px"/>
 
 **Prediction Rate vs Prediction Range Size:**
 
@@ -129,7 +139,7 @@ EP - Embarrassingly Parallel benchmark generates pairs of Gaussian random deviat
 
 **Prediction Rate vs Set Size:**
 
-<img src="../cg_pintrace2/Prediction_vs_SetSize.png" height="450px"/>
+<img src="../cg_pintrace2/Prediction_vs_SetSize.png" height="400px"/>
 
 #### Embarrassingly Parallel
 
@@ -137,11 +147,11 @@ EP - Embarrassingly Parallel benchmark generates pairs of Gaussian random deviat
 
 **Prediction Rate vs Write Count History Size:**
 
-<img src="../ep_plots/Prediction_vs_HistorySize.png" height="430px"/>
+<img src="../ep_plots/Prediction_vs_HistorySize.png" height="420px"/>
 
 **Prediction Rate vs Prediction Range Size:**
 
-<img src="../ep_plots/Prediction_vs_RangeSize.png" height="430px"/>
+<img src="../ep_plots/Prediction_vs_RangeSize.png" height="450px"/>
 
 **Prediction Rate vs Set Size:**
 
@@ -153,11 +163,11 @@ EP - Embarrassingly Parallel benchmark generates pairs of Gaussian random deviat
 
 **Prediction Rate vs Write Count History Size:**
 
-<img src="../mg_plots/Prediction_vs_HistorySize.png" height="430px"/>
+<img src="../mg_plots/Prediction_vs_HistorySize.png" height="400px"/>
 
 **Prediction Rate vs Prediction Range Size:**
 
-<img src="../mg_plots/Prediction_vs_RangeSize.png" height="430px"/>
+<img src="../mg_plots/Prediction_vs_RangeSize.png" height="420px"/>
 
 **Prediction Rate vs Set Size:**
 
