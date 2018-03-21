@@ -22,11 +22,20 @@ To create a memory system to predict the write count of a memory location before
 
 - **Implement a lossy hash table to model Last Level Cache in C++**
 - **Implement data structures to store write count history, predicted write count**
-- Generate address traces using benchmarks
+- **Generate address traces using benchmarks**
 - **Implement Prediction Algorithm based on the history**
 - **Vary parameters to find optimal prediction coverage.**
 
 *Note: Tasks in bold has been completed successfully*
+
+
+
+### Key Idea
+
+To predict the write count of a memory block:
+
+- Firstly, we should be able to **predict the address of the memory block before the actual access**
+- Secondly, we should be able to make an **intelligent guess about the write count** of the address which will be accessed
 
 ### Design
 
@@ -34,20 +43,8 @@ The design is divided into four main components:
 
 - **Main Memory (MM)** : Simulation model of the main memory that stores all address blocks from the address trace file.
 - **Cache ($) with Write History Holders**: 2MB LLC with a LRU replacement policy and n-way set associativity (n is an adjustable parameter in the model). 
-- **Pattern FIFO**: This is used to keep track of cache miss history.
-- **Predicted Write Count Buffer (pwcBuff)**: This buffer stores the predicted write count. On a cache miss, the buffer is read and compared to actual write count
-
-
-
-
-
-
-
-
-
-
-
-
+- **Pattern FIFO**: This is used to keep track of cache miss history. (**Predicts future memory access**)
+- **Predicted Write Count Buffer (pwcBuff)**: This buffer stores the predicted write count. On a cache miss, the buffer is read and compared to actual write count. (**Guesses write count**)
 
 
 ### Prediction Algorithm
@@ -168,8 +165,7 @@ Our model has overheads to predict the write count. The overheads can be summari
 
 *Therefore, due to MM compression overhead and hardware overhead of larger pattern FIFO, increase in size of WCHH is more expensive than increasing Prediction Range.*
 
-
-#### 
+ 
 
 #### Interpreting Results
 
@@ -186,7 +182,7 @@ Our model has overheads to predict the write count. The overheads can be summari
 
 ### Conclusion
 
-Our write count prediction model gives satisfactory results across all tested benchmarks with minimum of 9% and maximum of more than 88% correct predictions. This shows that this model can work very well for certain type of applications, particularly with repetitive memory access patters. 
+Our write count prediction model gives satisfactory results across all tested benchmarks with minimum of 9% and maximum of more than 88% correct predictions. This shows that this model can work very well for certain type of applications, particularly with repetitive memory access patterns. 
 
 
 
