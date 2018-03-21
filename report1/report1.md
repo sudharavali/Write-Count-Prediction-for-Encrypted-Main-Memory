@@ -32,10 +32,10 @@ To create a memory system to predict the write count of a memory location before
 
 The design is divided into four main components:
 
-- **Main Memory**: Simulation model of the main memory that stores all address blocks from the address trace file.
-- **Cache with Write History Holder**: 2MB LLC with a LRU replacement policy and n-way set associativity (n is an adjustable parameter in the model). 
-- **Pattern Fifo**: This is used to keep track of cache miss history.
-- **Predicted Write Count Buffer** (pwcBuf): This buffer stores the predicted write count. On a cache miss, the buffer is read and compared to actual write count
+- **Main Memory (MM)** : Simulation model of the main memory that stores all address blocks from the address trace file.
+- **Cache ($) with Write History Holders**: 2MB LLC with a LRU replacement policy and n-way set associativity (n is an adjustable parameter in the model). 
+- **Pattern FIFO**: This is used to keep track of cache miss history.
+- **Predicted Write Count Buffer (pwcBuff)**: This buffer stores the predicted write count. On a cache miss, the buffer is read and compared to actual write count
 
 
 
@@ -54,7 +54,7 @@ The design is divided into four main components:
 
 ```flow
 st=>start: Fetch A
-op=>operation: Check in pwcBuf and compare
+op=>operation: Check in pwcBuff and compare
 op1=>operation: update coverage
 op2=>operation: Put A in $
 op3=>operation: Find element to evict(E)
@@ -87,7 +87,7 @@ def putinCache(A):
 Our model is completely parameterized. The parameters we chose to analyse our design are:
 
 - **Write Count History Size**: This determines the size of *write count history holder (WCHH)*.
-- **Range Size**: This determines the range of predicted write count history. For example if write count of **B** according to **WCHH** of  **A** is n, the n to n+r values will be used to predict the write count of B.
+- **Prediction Range Size**: This determines the range of predicted write count history. For example if write count of **B** according to **WCHH** of  **A** is n, the n to n+r values will be used to predict the write count of B.
 - **Set Size**: This determines the number of cache lines that can be stored in on cache set (n-way set associativity).
 
 ### Results
@@ -100,17 +100,19 @@ MG - Multi-Grid benchmark performs four iteration of the V-cycle multigrid algor
 
 EP - Embarrassingly Parallel benchmark generates pairs of Gaussian random deviates and tabulates the number of pairs in successive square annuli [1].
 
+*Note: NAS Parallel Benchmark address traces were take from Team ? *
+
 
 
 #### Conjugate Gradient
 
-**Prediction Rate vs History Size:**
+**Prediction Rate vs Write Count History Size:**
 
 *Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines.*
 
 ![rediction_vs_HistorySiz](../cg_pintrace2/Prediction_vs_HistorySize.png)
 
-**Prediction Rate vs Range Size:**
+**Prediction Rate vs Prediction Range Size:**
 
 <img src="../cg_pintrace2/Prediction_vs_RangeSize.png" height="430px"/>
 
@@ -122,11 +124,11 @@ EP - Embarrassingly Parallel benchmark generates pairs of Gaussian random deviat
 
 *Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines*
 
-**Prediction Rate vs History Size:**
+**Prediction Rate vs Write Count History Size:**
 
 <img src="../ep_plots/Prediction_vs_HistorySize.png" height="430px"/>
 
-**Prediction Rate vs Range Size:**
+**Prediction Rate vs Prediction Range Size:**
 
 <img src="../ep_plots/Prediction_vs_RangeSize.png" height="430px"/>
 
@@ -138,11 +140,11 @@ EP - Embarrassingly Parallel benchmark generates pairs of Gaussian random deviat
 
 *Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines.*
 
-**Prediction Rate vs History Size:**
+**Prediction Rate vs Write Count History Size:**
 
 <img src="../mg_plots/Prediction_vs_HistorySize.png" height="430px"/>
 
-**Prediction Rate vs Range Size:**
+**Prediction Rate vs Prediction Range Size:**
 
 <img src="../mg_plots/Prediction_vs_RangeSize.png" height="430px"/>
 
@@ -156,13 +158,39 @@ EP - Embarrassingly Parallel benchmark generates pairs of Gaussian random deviat
 
 ### Analysis
 
-#### Interpreting Results
-
-Our write count prediction model shows fairly good results for Conjugate Gradient and Embarrassingly Parallel benchmarks. CG shows the best results with more than 70% coverage rate for all parameters. Increasing the write count history size (WCHH size) from 1 to 10 results in almost 14% increase in coverage, and increasing the range size from 1 to 10 results in more than 15% increase in coverage. Changing the value of associativity/set size from 1 (direct mapped) to 16 does not have any major effect on coverage. 
-
 #### Cost Analysis
 
-####Future Optimization
+Our model has overheads to predict the write count. The overheads can be summarized as follows
+
+- **Main Memory  Compression**: If the write count history holder size is increased, each memory block will require higher compression in order to store more predicted write counts.
+- **Pattern FIFO Size**: If the write count history holder size is increased, then the size of the pattern FIFO increases linearly.
+- **Predicted Write Count Buffer Size**: If the prediction range is increased, then the size of the buffer is increased linearly for a given write count history holder size.
+
+*Therefore, due to MM compression overhead and hardware overhead of larger pattern FIFO, increase in size of WCHH is more expensive than increasing Prediction Range.*
+
+
+#### 
+
+#### Interpreting Results
+
+- **Minimum Cost Performance**: Even at a minimum cost with WCHH size and Prediction Range parameters set to 1, our write count prediction model is able to show satisfactory results with minimum of 9% (worst) coverage for MG and up to 74% (best) coverage for CG workload.
+- **Best Performance**: With WCHH size and Prediction Range size parameters set to highest tested values of 10, the model shows 10% coverage for MG and more than 88% coverage for CG. This also leads to the most expensive solution as we increase all of the model's overheads.
+- **Performance with  optimal cost**: Despite the fact that WCHH size increase provides the best coverage performance, due to its high overhead, it is much cheaper to increase the Prediction Range while keeping the coverage rate comparably high. Therefore, the optimal cost-performance parameters for our model is WCHH size of 2 and Prediction Range of 10, which results in 84% coverage rate for CG,  51% for EP and relatively low overall overhead. 
+
+
+
+####Potential Optimizations
+
+- **Dirty Write back: ** Since every WCHH block  needs to updated once prior to being evicted, it becomes dirty. This means that on eviction every WCHH block needs to be written back, which might significantly increase the memory bandwidth overhead. Smart pattern (cache miss history) recognition algorithm can potentially help mitigate this issue.
+- **Run on more benchmarks**: Running different types of benchmark will help us better understand the behaviour of our model under different scenarios and workloads, and allow us to identify target applications for our write count prediction algorithms.
 
 ### Conclusion
+
+Our write count prediction model gives satisfactory results across all tested benchmarks with minimum of 9% and maximum of more than 88% correct predictions. This shows that this model can work very well for certain type of applications, particularly with repetitive memory access patters. 
+
+
+
+### References
+
+D. Bailey, E. Barszcz, L. Dagum and H. Simon, "NAS Parallel Benchmark Results," RNR-92-002, 1993                https://www.nas.nasa.gov/assets/pdf/techreports/1992/rnr-92-002.pdf
 
