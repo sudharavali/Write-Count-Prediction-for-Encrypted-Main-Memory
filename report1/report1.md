@@ -54,14 +54,14 @@ The design is divided into four main components:
 
 ```flow
 st=>start: Fetch A
-op=>operation: Check in pwcBuff and compare
-op1=>operation: update coverage
+op=>operation: Check pwcBuff and compare
+op1=>operation: Update coverage
 op2=>operation: Put A in $
 op3=>operation: Find element to evict(E)
-op4=>operation: Update WC and writeback
-cond1=>condition: Check A is in $
-cond2=>condition: Check A in pwcBuf
-cond3=>condition: Check $ needs eviction
+op4=>operation: Update WC of E and write-back
+cond1=>condition: Check if A is in $
+cond2=>condition: Check if A in pwcBuf
+cond3=>condition: Check if $ needs eviction
 e=>end
 e1=>end
 
@@ -72,12 +72,26 @@ op1->cond3(yes)->op3->op4->op2
 cond3(no)->op2->e1
 ```
 
-```python
-def putinCache(A):
-	patternFifo.size() == HISTORY_SIZE:
-        x = patternFifo.pop()
-        UpdateWCHistory(x)
-    patternFifo.push(A)
+
+
+*Pseudo-code of Put A in $*
+```cpp
+void putinCache(A) {
+	if (patternFifo.size() == HISTORY_SIZE + 1;) {
+		X = patternFifo.pop_back();
+        updateWCHistory(X);
+    }
+    patternFifo.push_front(A);
+}
+
+void updateWCHistory(X) {
+    int i = 0;
+	for (it = patternFifo.crbegin(); it != patternBuffQueue.crend(); ++it) {
+                        X.wcHistory[i] = it.wc;
+                        i++;
+ 	}
+    X.isDirty = 1;
+}
 ```
 
 
@@ -174,8 +188,8 @@ Our model has overheads to predict the write count. The overheads can be summari
 #### Interpreting Results
 
 - **Minimum Cost Performance**: Even at a minimum cost with WCHH size and Prediction Range parameters set to 1, our write count prediction model is able to show satisfactory results with minimum of 9% (worst) coverage for MG and up to 74% (best) coverage for CG workload.
-- **Best Performance**: With WCHH size and Prediction Range size parameters set to highest tested values of 10, the model shows 10% coverage for MG and more than 88% coverage for CG. This also leads to the most expensive solution as we increase all of the model's overheads.
-- **Performance with  optimal cost**: Despite the fact that WCHH size increase provides the best coverage performance, due to its high overhead, it is much cheaper to increase the Prediction Range while keeping the coverage rate comparably high. Therefore, the optimal cost-performance parameters for our model is WCHH size of 2 and Prediction Range of 10, which results in 84% coverage rate for CG,  51% for EP and relatively low overall overhead. 
+- **Best Performance**: With WCHH size and Prediction Range size parameters set to highest tested values of 10, the model shows 10% coverage for MG and more than 88% coverage for CG. This also leads to the most expensive solution as we increase all of the model's overheads. 
+- **Performance with  optimal cost**: Despite the fact that WCHH size increase provides the best coverage performance, due to its high overhead, it is much cheaper to increase the Prediction Range while keeping the coverage rate comparably high. Therefore, the optimal cost-performance parameters for our model is WCHH size of 2 and Prediction Range of 10, which results in 84% coverage rate for CG,  51% for EP and relatively low overall overhead. Moreover, as can be seen on all of the above graphs, there is a diminishing return of coverage, as every successive increase in parameter values  will result in smaller increase of coverage rate (slopes of graphs are getting smaller for all parameter values after 2 - point of diminishing return)
 
 
 
