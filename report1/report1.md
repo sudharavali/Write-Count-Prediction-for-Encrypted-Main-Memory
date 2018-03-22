@@ -20,7 +20,7 @@ Create a memory system to predict the write count of a memory location before th
 
 - **Implement a lossy hash table to model Last Level Cache in C++**
 - **Implement data structures to store write count history, predicted write count**
-- **Generate address traces using benchmarks**
+- **Generate address traces using benchmarks and micro-benchmarks** 
 - **Implement Prediction Algorithm based on the history**
 - **Vary parameters to find optimal prediction coverage.**
 
@@ -107,9 +107,47 @@ Our model is completely parameterized. The parameters we chose to analyse our de
 - **Prediction Range Size**: This determines the range of predicted write count history. For example if write count of **B** according to **WCHH** of  **A** is n, the n to n+r values will be used to predict the write count of B.
 - **Set Size**: This determines the number of cache lines that can be stored in on cache set (n-way set associativity).
 
+
+
 ### Results
 
-We ran our model on **NAS Parallel Benchmark** for three different workloads: 
+We implemented two micro-benchmarks for **array** and **linked list** traversals to test repetitive memory access patters (results below).
+
+####Array
+
+**Prediction Rate vs Write Count History Size:**
+
+*Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines.*
+
+<img src="../Prediction_vs_HistorySize.png" height="400px"/>
+
+
+
+**Prediction Rate vs Prediction Range Size:**
+
+<img src="../Prediction_vs_RangeSize.png" height="430px"/>
+
+
+
+####Linked List
+
+**Prediction Rate vs Write Count History Size:**
+
+*Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines.*
+
+<img src="../list_plots/Prediction_vs_HistorySize.png" height="400px"/>
+
+
+
+**Prediction Rate vs Prediction Range Size:**
+
+<img src="../list_plots/Prediction_vs_RangeSize.png" height="400px"/>
+
+
+
+
+
+We also ran our model on **NAS Parallel Benchmark** for three different workloads (results below): 
 
 CG - **Conjugate Gradient benchmark** computes an estimate of the largest eigenvalue of a symmetric positive definite sparse matrix with a random patter of nonzeros [1]. 
 
@@ -118,8 +156,6 @@ MG - **Multi-Grid benchmark** performs four iteration of the V-cycle multigrid a
 EP - **Embarrassingly Parallel benchmark** generates pairs of Gaussian random deviates and tabulates the number of pairs in successive square annuli [1].
 
 *Note: NAS Parallel Benchmark address traces were take from Team 2*
-
-
 
 
 
@@ -135,7 +171,7 @@ EP - **Embarrassingly Parallel benchmark** generates pairs of Gaussian random de
 
 **Prediction Rate vs Prediction Range Size:**
 
-<img src="../cg_pintrace2/Prediction_vs_RangeSize.png" height="430px"/>
+
 
 **Prediction Rate vs Set Size:**
 
@@ -177,6 +213,12 @@ EP - **Embarrassingly Parallel benchmark** generates pairs of Gaussian random de
 
 
 
+We have also generated several address trace files for **SPEC2017** benchmark, but were not able to run them due to lack of time (*TODO*).
+
+
+
+
+
 ### Analysis
 
 #### Cost Analysis
@@ -193,8 +235,11 @@ Our model has overheads to predict the write count. The overheads can be summari
 
 #### Interpreting Results
 
-- **Minimum Cost Performance**: Even at a minimum cost with WCHH size and Prediction Range parameters set to 1, our write count prediction model is able to show satisfactory results with minimum of 9% (worst) coverage for MG and up to 74% (best) coverage for CG workload.
-- **Best Performance**: With WCHH size and Prediction Range size parameters set to highest tested values of 10, the model shows 10% coverage for MG and more than 88% coverage for CG. This also leads to the most expensive solution as we increase all of the model's overheads. 
+- **Micro-benchmarks:** Since both array and linked list traversals perform highly repetitive memory accesses, our model was able to successfully predict almost every write count.
+
+
+- **Minimum Cost Performance**: Even at a minimum cost with WCHH size and Prediction Range parameters set to 1, our write count prediction model is able to show satisfactory results with minimum of 20% (worst) coverage for EP and up to 99% (best) coverage for MG workload.
+- **Best Performance**: With WCHH size and Prediction Range size parameters set to highest tested values of 10, the model shows 62% coverage for EP and more than 99% coverage for MG. This also leads to the most expensive solution as we increase all of the model's overheads. 
 - **Performance with  optimal cost**: Despite the fact that WCHH size increase provides the best coverage performance, due to its high overhead, it is much cheaper to increase the Prediction Range while keeping the coverage rate comparably high. Therefore, the optimal cost-performance parameters for our model is WCHH size of 2 and Prediction Range of 10, which results in 84% coverage rate for CG,  51% for EP and relatively low overall overhead. Moreover, as can be seen on all of the above graphs, there is a diminishing return of coverage, as every successive increase in parameter values  will result in smaller increase of coverage rate (slopes of graphs are getting smaller for all parameter values after 2 - point of diminishing return)
 
 
@@ -206,7 +251,7 @@ Our model has overheads to predict the write count. The overheads can be summari
 
 ### Conclusion
 
-Our write count prediction model gives satisfactory results across all tested benchmarks with minimum of 9% and maximum of more than 88% correct predictions. This shows that this model can work very well for certain type of applications, particularly with repetitive memory access patterns. 
+Our write count prediction model gives satisfactory results across all tested benchmarks with minimum of 20% and maximum of more than 99% correct predictions. This shows that this model can work very well for certain type of applications, particularly with repetitive memory access patterns. 
 
 
 
