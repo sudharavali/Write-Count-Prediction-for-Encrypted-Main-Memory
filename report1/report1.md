@@ -111,41 +111,7 @@ Our model is completely parameterized. The parameters we chose to analyse our de
 
 ### Results
 
-We implemented two micro-benchmarks for **array** and **linked list** traversals to test repetitive memory access patters (results below).
-
-####Array
-
-**Prediction Rate vs Write Count History Size:**
-
-*Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines.*
-
-<img src="../Prediction_vs_HistorySize.png" height="400px"/>
-
-
-
-**Prediction Rate vs Prediction Range Size:**
-
-<img src="../Prediction_vs_RangeSize.png" height="430px"/>
-
-
-
-####Linked List
-
-**Prediction Rate vs Write Count History Size:**
-
-*Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines.*
-
-<img src="../list_plots/Prediction_vs_HistorySize.png" height="400px"/>
-
-
-
-**Prediction Rate vs Prediction Range Size:**
-
-<img src="../list_plots/Prediction_vs_RangeSize.png" height="400px"/>
-
-
-
-
+We implemented two micro-benchmarks for **array** and **linked list** traversals to test repetitive memory access patters.
 
 We also ran our model on **NAS Parallel Benchmark** for three different workloads (results below): 
 
@@ -159,7 +125,31 @@ EP - **Embarrassingly Parallel benchmark** generates pairs of Gaussian random de
 
 
 
+####Array
 
+**Prediction Rate vs Write Count History Size:**
+
+*Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines.*
+
+<img src="../array_plots/Prediction_vs_HistorySize.png" height="400px"/>
+
+
+
+**Prediction Rate vs Prediction Range Size:**
+
+<img src="../array_plots/Prediction_vs_RangeSize.png" height="400px"/>
+
+####Linked List
+
+**Prediction Rate vs Write Count History Size:**
+
+*Note: Y-axis is a prediction rate/coverage (# of correct predictions/ # of total predictions), not Total Cache Lines.*
+
+<img src="../list_plots/Prediction_vs_HistorySize.png" height="400px"/>
+
+**Prediction Rate vs Prediction Range Size:**
+
+<img src="../list_plots/Prediction_vs_RangeSize.png" height="400px"/>
 
 #### Conjugate Gradient
 
@@ -170,6 +160,8 @@ EP - **Embarrassingly Parallel benchmark** generates pairs of Gaussian random de
 <img src="../cg_pintrace2/Prediction_vs_HistorySize.png" height="400px"/>
 
 **Prediction Rate vs Prediction Range Size:**
+
+<img src="../cg_pintrace2/Prediction_vs_RangeSize.png" height="420px"/>
 
 
 
@@ -183,15 +175,23 @@ EP - **Embarrassingly Parallel benchmark** generates pairs of Gaussian random de
 
 **Prediction Rate vs Write Count History Size:**
 
-<img src="../ep_plots/Prediction_vs_HistorySize.png" height="420px"/>
+<img src="../ep_plots/Prediction_vs_HistorySize.png" height="400px"/>
 
 **Prediction Rate vs Prediction Range Size:**
 
-<img src="../ep_plots/Prediction_vs_RangeSize.png" height="450px"/>
+<img src="../ep_plots/Prediction_vs_RangeSize.png" height="400px"/>
 
 **Prediction Rate vs Set Size:**
 
-<img src="../ep_plots/Prediction_vs_SetSize.png" height="430px"/>
+<img src="../ep_plots/Prediction_vs_SetSize.png" height="400px"/>
+
+
+
+
+
+
+
+
 
 #### Multi-Grid
 
@@ -203,19 +203,13 @@ EP - **Embarrassingly Parallel benchmark** generates pairs of Gaussian random de
 
 **Prediction Rate vs Prediction Range Size:**
 
-<img src="../mg_plots/Prediction_vs_RangeSize.png" height="420px"/>
+<img src="../mg_plots/Prediction_vs_RangeSize.png" height="400px"/>
 
 **Prediction Rate vs Set Size:**
 
-<img src="../mg_plots/Prediction_vs_SetSize.png" height="430px"/>
+<img src="../mg_plots/Prediction_vs_SetSize.png" height="400px"/>
 
-
-
-
-
-We have also generated several address trace files for **SPEC2017** benchmark, but were not able to run them due to lack of time (*TODO*).
-
-
+**Note:**  *We have also generated executable of all the 43 benchmarks for **SPEC2017 ** and generate address traces, but were not able to run them due to lack of time .*
 
 
 
@@ -252,8 +246,6 @@ Our model has overheads to predict the write count. The overheads can be summari
 ### Conclusion
 
 Our write count prediction model gives satisfactory results across all tested benchmarks with minimum of 20% and maximum of more than 99% correct predictions. This shows that this model can work very well for certain type of applications, particularly with repetitive memory access patterns. 
-
-
 
 ### References
 
