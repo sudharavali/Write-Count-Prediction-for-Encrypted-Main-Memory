@@ -1,15 +1,87 @@
 #include "wc_prediction.hpp"
 
-namespace wcprediction {
-   addr_t mask_set;
-   int total_predictions;
-   int correct_predictions;
-   unsigned int total_bandwidth;
-   unsigned int write_bandwidth;
-   unsigned int prediction_bandwidth;
+addr_t mask_set;
+int total_predictions;
+int correct_predictions;
+unsigned int total_bandwidth;
+unsigned int write_bandwidth;
+unsigned int prediction_bandwidth;
+
+unsigned int LruCache::Size() const {
+   return cache_map_.size();
 }
 
-int wcprediction::CompareWriteCounts(const addr_t& key){
+// Get the address of LRU block
+addr_t LruCache::GetLeastUsed() {
+
+   auto last = cache_list_.end();
+   last--;
+   return last->first;
+}
+
+// Put block in $ and update it based on LRU
+void LruCache::PutAndUpdate(const addr_t& key, const struct CacheBlock& value) {
+   auto it = cache_map_.find(key);
+   cache_list_.push_front(BlockPair(key, value));
+   if (it != cache_map_.end()) {
+	cache_list_.erase(it->second);
+	cache_map_.erase(it);
+   }
+   cache_map_[key] = cache_list_.begin();
+
+   if (cache_map_.size() > cache_size_) {
+	auto last = cache_list_.end();
+	last--;
+	cache_map_.erase(last->first);
+	cache_list_.pop_back();
+   }
+}
+
+// Put block in $ without updating
+void LruCache::PutNotUpdate(const addr_t& key, const struct CacheBlock& value) {
+   auto it = cache_map_.find(key);
+   if (it != cache_map_.end()) {
+	cache_map_.erase(it);
+	auto old = cache_list_.erase(it->second);
+	
+	old = cache_list_.insert(old,BlockPair(key,value));
+	cache_map_[key] = old;
+   }
+
+   if (cache_map_.size() > cache_size_) {
+	throw std::range_error("CACHE OVERFLOW");
+   }
+}
+
+// Check if block is in $
+bool LruCache::Exists(const addr_t& key) const {
+   return cache_map_.find(key) != cache_map_.end();
+}
+
+// Get block from $ and update it based on LRU
+const struct CacheBlock& LruCache::GetAndUpdate(const addr_t& key) {
+   auto it = cache_map_.find(key);
+   if (it == cache_map_.end()) {
+	throw std::range_error("NO SUCH KEY");
+   } 
+   else {
+	cache_list_.splice(cache_list_.begin(), cache_list_, it->second);
+	return it->second->second;
+   }
+}
+	
+// Get block from $ without updating
+const struct CacheBlock& LruCache::GetNotUpdate(const addr_t& key) {
+   auto it = cache_map_.find(key);
+   if (it == cache_map_.end()) {
+	throw std::range_error("NO SUCH KEY");
+   } 
+   else {
+	return it->second->second;
+   }
+}	
+
+int CompareWriteCounts(const addr_t& key){
 
    total_predictions++;
 
@@ -36,7 +108,7 @@ int wcprediction::CompareWriteCounts(const addr_t& key){
    return actual_wc;
 }
 
-void wcprediction::InitMask(){
+void InitMask(){
 
    total_predictions = 0;
    correct_predictions = 0;
@@ -51,7 +123,7 @@ void wcprediction::InitMask(){
    }
 }
 
-void wcprediction::PutBlockInCache(const int& set, const addr_t& key, const struct CacheBlock& block) {
+void PutBlockInCache(const int& set, const addr_t& key, const struct CacheBlock& block) {
    // Check if $ is full: 
    // If yes find LRU block to evict (E) to put new block (A) in $	
    if (lru_cache[set].Size() >= SET_SIZE) {
@@ -80,7 +152,7 @@ void wcprediction::PutBlockInCache(const int& set, const addr_t& key, const stru
 
 }
 
-void wcprediction::UpdateDirtyStatus(const std::string& op, const int& set, const addr_t& key) {
+void UpdateDirtyStatus(const std::string& op, const int& set, const addr_t& key) {
    // Check the memory operation, if WRITE then block is dirty
    struct CacheBlock temp_block = lru_cache[set].GetAndUpdate(key);
    if (op == "W") {
@@ -93,7 +165,7 @@ void wcprediction::UpdateDirtyStatus(const std::string& op, const int& set, cons
 
 
 
-int wcprediction::GetActualWcFromMM(const addr_t& key) {
+int GetActualWcFromMM(const addr_t& key) {
    
    auto it = main_memory.find(key);
    if (it == main_memory.end()) {
@@ -105,7 +177,7 @@ int wcprediction::GetActualWcFromMM(const addr_t& key) {
 
 }
 
-struct wcprediction::CacheBlock wcprediction::GetBlockFromMM(const addr_t& key) {
+struct CacheBlock GetBlockFromMM(const addr_t& key) {
    
    struct CacheBlock temp_block = {};
    auto it = main_memory.find(key);
@@ -120,7 +192,7 @@ struct wcprediction::CacheBlock wcprediction::GetBlockFromMM(const addr_t& key) 
 }
 
 
-void wcprediction::UpdatePattern(const addr_t& key, const int& wc) {
+void UpdatePattern(const addr_t& key, const int& wc) {
    // Check if pattern buffer is full, if not skip
    if (pattern_buffer.size() == PATTERNFIFO_SIZE) {
 	// Get last block from the buffer 
@@ -153,7 +225,6 @@ void wcprediction::UpdatePattern(const addr_t& key, const int& wc) {
 
 
 int main() {
-   using namespace wcprediction;
    
    InitMask(); 
    

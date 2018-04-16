@@ -13,7 +13,6 @@
 #include "parameter.hpp"
 
 
-namespace wcprediction {
 
 typedef unsigned long addr_t;
 // Total number of cache lines in cache
@@ -57,74 +56,26 @@ class LruCache {
 			cache_size_(SET_SIZE) {
 		}
 		
-		unsigned int Size() const {
-			return cache_map_.size();
-		}
- 		// Get the address of LRU block
-		addr_t GetLeastUsed() {
+		unsigned int Size() const;
 
-			auto last = cache_list_.end();
-			last--;
-			return last->first;
-		}
+		// Get the address of LRU block
+		addr_t GetLeastUsed();
+
 		// Put block in $ and update it based on LRU
-		void PutAndUpdate(const addr_t& key, const struct CacheBlock& value) {
-			auto it = cache_map_.find(key);
-			cache_list_.push_front(BlockPair(key, value));
-			if (it != cache_map_.end()) {
-				cache_list_.erase(it->second);
-				cache_map_.erase(it);
-			}
-			cache_map_[key] = cache_list_.begin();
-			
-			if (cache_map_.size() > cache_size_) {
-				auto last = cache_list_.end();
-				last--;
-				cache_map_.erase(last->first);
-				cache_list_.pop_back();
-			}
-		}
+		void PutAndUpdate(const addr_t& key, const struct CacheBlock& value);
+
 		// Put block in $ without updating
-		void PutNotUpdate(const addr_t& key, const struct CacheBlock& value) {
-			auto it = cache_map_.find(key);
-			if (it != cache_map_.end()) {
-				cache_map_.erase(it);
-				auto old = cache_list_.erase(it->second);
-				
-				old = cache_list_.insert(old,BlockPair(key,value));
-				cache_map_[key] = old;
-			}
-			
-			if (cache_map_.size() > cache_size_) {
-				throw std::range_error("CACHE OVERFLOW");
-			}
-		}
+		void PutNotUpdate(const addr_t& key, const struct CacheBlock& value);
 		
 		// Check if block is in $
-		bool Exists(const addr_t& key) const {
-			return cache_map_.find(key) != cache_map_.end();
-		}
+		bool Exists(const addr_t& key) const;
+
 		// Get block from $ and update it based on LRU
-		const struct CacheBlock& GetAndUpdate(const addr_t& key) {
-			auto it = cache_map_.find(key);
-			if (it == cache_map_.end()) {
-				throw std::range_error("NO SUCH KEY");
-			} 
-			else {
-				cache_list_.splice(cache_list_.begin(), cache_list_, it->second);
-				return it->second->second;
-			}
-		}	
+		const struct CacheBlock& GetAndUpdate(const addr_t& key);
+
 		// Get block from $ without updating
-		const struct CacheBlock& GetNotUpdate(const addr_t& key) {
-			auto it = cache_map_.find(key);
-			if (it == cache_map_.end()) {
-				throw std::range_error("NO SUCH KEY");
-			} 
-			else {
-				return it->second->second;
-			}
-		}	
+		const struct CacheBlock& GetNotUpdate(const addr_t& key);
+
 	private:
 		std::list<BlockPair> cache_list_;
 		std::unordered_map<addr_t, ListIterator> cache_map_;
@@ -159,11 +110,10 @@ void UpdatePattern(const addr_t& key, const int& wc);
 
 extern addr_t mask_set;
 extern int total_predictions;
-extern int correct_prediction;
+extern int correct_predictions;
 extern unsigned int total_bandwidth;
 extern unsigned int write_bandwidth;
 extern unsigned int prediction_bandwidth;
-} 
 
 #endif	/* WC_PREDICTION_HPP */
 
