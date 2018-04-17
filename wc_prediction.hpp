@@ -22,7 +22,7 @@ const int SET_SIZE = PARAM_SET_SIZE;
 // Number of sets
 const int SET_NUM = CACHE_SIZE / SET_SIZE;
 // Size of set bits
-const int SET_BITS = floor(log(SET_NUM)/log(2));
+const int SET_BITS = floor(log((double)SET_NUM)/log(2.0));
 // Size of write count history
 const int WCHISTORY_SIZE = PARAM_WCHISTORY_SIZE;
 // Size of pattern FIFO

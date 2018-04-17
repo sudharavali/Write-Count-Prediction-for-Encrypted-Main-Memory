@@ -44,8 +44,6 @@ int correct_predictions;
 unsigned int total_bandwidth;
 unsigned int write_bandwidth;
 unsigned int prediction_bandwidth;
-int cache_misses;
-int total_fetches;
 
 void InitMask()
 {
@@ -57,8 +55,6 @@ void InitMask()
    write_bandwidth = 0;
    prediction_bandwidth = 0;
 
-   cache_misses = 0;
-   total_fetches = 0;
 
    mask_set = 0x0;
    for (int i = 0; i < SET_BITS; i++) {
@@ -92,6 +88,19 @@ void LruCache::PutAndUpdate(const addr_t& key, const struct CacheBlock& value) {
 bool LruCache::Exists(const addr_t& key) const {
    return cache_map_.find(key) != cache_map_.end();
 }
+
+// Get block from $ without updating
+const struct CacheBlock& LruCache::GetNotUpdate(const addr_t& key) {
+   auto it = cache_map_.find(key);
+   if (it == cache_map_.end()) {
+	//throw std::range_error("NO SUCH KEY");
+	//Should never be here, since we always check first if block exists in the cache
+	return it->second->second;
+   } 
+   else {
+	return it->second->second;
+   }
+}	
 	
 
 // Print a memory read record
@@ -99,23 +108,18 @@ VOID RecordMemRead(VOID * ip, VOID * addr)
 {
     unsigned long block_addr = 0;
     block_addr = (long)addr / 64;
-
     int cache_set = 0;
     cache_set = block_addr & mask_set;
     
-    int exists = 0;
-    exists = lru_cache[cache_set].Exists(block_addr);
-     
-    int set_size = 0;
-    set_size = lru_cache[cache_set].Size();
+    struct CacheBlock temp_block = {};
     
     if(!lru_cache[cache_set].Exists(block_addr)) {
-   	cache_misses++;
-    	fprintf(trace,"R %lx %d %d %d %d %d\n", block_addr, cache_set, set_size, exists, cache_misses, total_fetches);
+    	fprintf(trace,"R %#013lx\n", block_addr);
+    	temp_block.is_dirty = 0;
+    }else {
+	temp_block = lru_cache[cache_set].GetNotUpdate(block_addr);
     }
-    total_fetches++;
     
-    struct CacheBlock temp_block = {};
     lru_cache[cache_set].PutAndUpdate(block_addr, temp_block);
 
     //fprintf(trace,"R %p\n", addr);
@@ -126,23 +130,21 @@ VOID RecordMemWrite(VOID * ip, VOID * addr)
 {
     unsigned long block_addr = 0;
     block_addr = (long)addr / 64;
-    
     int cache_set = 0;
     cache_set = block_addr & mask_set;
     
-    int exists = 0;
-    exists = lru_cache[cache_set].Exists(block_addr); 
- 
-    int set_size = 0;
-    set_size = lru_cache[cache_set].Size();
-
-    if(lru_cache[cache_set].Exists(block_addr) == 0) {
-   	cache_misses++;
-    	fprintf(trace,"W %lx %d %d %d %d %d\n", block_addr, cache_set, set_size, exists, cache_misses, total_fetches);
-    }
-    total_fetches++;
-    
     struct CacheBlock temp_block = {};
+
+    if(!lru_cache[cache_set].Exists(block_addr)) {
+    	fprintf(trace,"W %#013lx\n", block_addr);
+    }else {
+	temp_block = lru_cache[cache_set].GetNotUpdate(block_addr);
+	if (!temp_block.is_dirty) {
+		fprintf(trace,"W %#013lx\n", block_addr);
+	}
+    }
+    
+    temp_block.is_dirty = 1;
     lru_cache[cache_set].PutAndUpdate(block_addr, temp_block);
 
     //fprintf(trace,"R %p\n", addr);
