@@ -44,19 +44,19 @@ FILE * trace;
 ///////////////////////////////////////////////////////////
 
 addr_t mask_set;
-int total_predictions;
-int correct_predictions;
-unsigned int total_bandwidth;
-unsigned int write_bandwidth;
-unsigned int prediction_bandwidth;
+unsigned long long total_predictions;
+unsigned long long correct_predictions;
+unsigned long long total_bandwidth;
+unsigned long long write_bandwidth;
+unsigned long long  prediction_bandwidth;
 
-unsigned int print_count;
+unsigned long long print_count;
 int max_wc;
-unsigned int total_fetches;
-unsigned int total_misses;
-unsigned int total_hits;
-unsigned int total_reads;
-unsigned int total_writes;
+unsigned long long total_fetches;
+unsigned long long total_misses;
+unsigned long long total_hits;
+unsigned long long total_reads;
+unsigned long long total_writes;
 
 void InitMask()
 {
@@ -200,13 +200,13 @@ void PutBlockInCache(const int& set, const addr_t& key, const struct CacheBlock&
 	if (evict_block.is_dirty) {
 		if (evict_block.is_dirty == 1) {
 			write_bandwidth++;
+			evict_block.wc_actual++;
 		}
 		else if (evict_block.is_dirty == 2) {
 			prediction_bandwidth++;
 		}
 	
 		evict_block.is_dirty = 0;
-		evict_block.wc_actual++;
 		// Writeback E to MM
 		main_memory[evict_key] = evict_block;
 
@@ -405,6 +405,18 @@ VOID Instruction(INS ins, VOID *v)
 
 VOID Fini(INT32 code, VOID *v)
 {
+    std::cout << "---DONE---" << std::endl;
+    unsigned long average_wc = 0;
+    unsigned long mainmem_size = 0;
+    mainmem_size = main_memory.size();
+    for (auto it : main_memory) {
+	average_wc += it.second.wc_actual;
+    }
+    if (mainmem_size) {
+	average_wc = average_wc / mainmem_size;
+    }
+   
+ 
     fprintf(trace,"===============PARAMETERS===============\n");
     fprintf(trace,"%-25s%-20u\n", "Cache size:", CACHE_SIZE);
     fprintf(trace,"%-25s%-20d\n", "Set size:", SET_SIZE);
@@ -412,20 +424,21 @@ VOID Fini(INT32 code, VOID *v)
     fprintf(trace,"%-25s%-20d\n\n", "Range size", PREDICT_RANGE);
    
     fprintf(trace,"==================LOGS==================\n");
-    fprintf(trace,"%-25s%-20u\n", "Total fetches",total_fetches);
-    fprintf(trace,"%-25s%-20lu\n", "Unique addresses:", main_memory.size());
-    fprintf(trace,"%-25s%-20u\n", "Max write counts:", max_wc);
-    fprintf(trace,"%-25s%-20u\n", "WB due to write op:", write_bandwidth);
-    fprintf(trace,"%-25s%-20u\n", "WB due to wcHH:", prediction_bandwidth);
-    fprintf(trace,"%-25s%-20u\n", "Total WB to MM:", total_bandwidth);
-    fprintf(trace,"%-25s%-20u\n", "Total cache misses:", total_misses);
-    fprintf(trace,"%-25s%-20u\n", "Total cache hits:", total_hits);
-    fprintf(trace,"%-25s%-20u\n", "Total reads:", total_reads);
-    fprintf(trace,"%-25s%-20u\n\n", "Total writes:", total_writes);
+    fprintf(trace,"%-25s%-20.10e\n", "Total fetches", (double)total_fetches);
+    fprintf(trace,"%-25s%-20.10e\n", "Unique addresses:", (double)mainmem_size);
+    fprintf(trace,"%-25s%-20d\n", "Max write count:", max_wc);
+    fprintf(trace,"%-25s%-20lu\n", "Average write count:", average_wc);
+    fprintf(trace,"%-25s%-20.10e\n", "WB due to write op:", (double)write_bandwidth);
+    fprintf(trace,"%-25s%-20.10e\n", "WB due to wcHH:", (double)prediction_bandwidth);
+    fprintf(trace,"%-25s%-20.10e\n", "Total WB to MM:", (double)total_bandwidth);
+    fprintf(trace,"%-25s%-20.10e\n", "Total cache misses:", (double)total_misses);
+    fprintf(trace,"%-25s%-20.10e\n", "Total cache hits:", (double)total_hits);
+    fprintf(trace,"%-25s%-20.10e\n", "Total reads:", (double)total_reads);
+    fprintf(trace,"%-25s%-20.10e\n\n", "Total writes:", (double)total_writes);
     
     fprintf(trace,"=================RESULTS================\n");
-    fprintf(trace,"%-25s%-20u\n", "Correct predictions:", correct_predictions);
-    fprintf(trace,"%-25s%-20u\n", "Total predictions:", total_predictions);
+    fprintf(trace,"%-25s%-20.10e\n", "Correct predictions:", (double)correct_predictions);
+    fprintf(trace,"%-25s%-20.10e\n", "Total predictions:", (double)total_predictions);
     fprintf(trace,"%-25s%-20.2f\n", "Coverage:", (float)correct_predictions/total_predictions*100);
     fclose(trace);
 }
