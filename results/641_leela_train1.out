@@ -1,0 +1,23 @@
+===============PARAMETERS===============
+Cache size:              32768               
+Set size:                16                  
+History size             1                   
+Range size               1                   
+
+==================LOGS==================
+Total fetches            1.5519312225e+11    
+Unique addresses:        3.6636900000e+05    
+Max write count:         2170                
+Average write count:     157                 
+WB due to write op:      5.7600925000e+07    
+WB due to wcHH:          5.1068634000e+07    
+Total WB to MM:          1.0866955900e+08    
+Total cache misses:      1.0870232700e+08    
+Total cache hits:        1.5508441993e+11    
+Total reads:             1.0798880164e+11    
+Total writes:            4.7204320618e+10    
+
+=================RESULTS================
+Correct predictions:     5.7094544000e+07    
+Total predictions:       1.0870232700e+08    
+Coverage:                52.52               
