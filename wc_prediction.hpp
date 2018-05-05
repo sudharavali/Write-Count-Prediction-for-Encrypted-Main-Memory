@@ -22,7 +22,7 @@ const int SET_SIZE = PARAM_SET_SIZE;
 // Number of sets
 const int SET_NUM = CACHE_SIZE / SET_SIZE;
 // Size of set bits
-const int SET_BITS = floor(log(SET_NUM)/log(2));
+const int SET_BITS = floor(log((double)SET_NUM)/log(2.0));
 // Size of write count history
 const int WCHISTORY_SIZE = PARAM_WCHISTORY_SIZE;
 // Size of pattern FIFO
@@ -33,7 +33,7 @@ const int PREDICT_RANGE = PARAM_PREDICT_RANGE;
 const int WCHISTORY_WRITEBACK_FREQUENCY = 1;
 
 // Address traces file
-const std::string FILE_NAME = "trythis.txt";
+const std::string FILE_NAME = "addrtrace/trace.txt";
 
 // Memory block
 struct CacheBlock {
@@ -42,7 +42,6 @@ struct CacheBlock {
 	int wc_actual;
 	int wc_history[WCHISTORY_SIZE];
 	int is_dirty;
-	int var;
 };
 
 
@@ -56,7 +55,7 @@ class LruCache {
 		LruCache() :
 			cache_size_(SET_SIZE) {
 		}
-
+		
 		unsigned int Size() const;
 
 		// Get the address of LRU block
@@ -67,7 +66,7 @@ class LruCache {
 
 		// Put block in $ without updating
 		void PutNotUpdate(const addr_t& key, const struct CacheBlock& value);
-
+		
 		// Check if block is in $
 		bool Exists(const addr_t& key) const;
 
@@ -85,7 +84,7 @@ class LruCache {
 
 
 // Initialize set mask
-void InitMask();
+void InitMask(); 
 int CompareWriteCounts(const addr_t& key);
 
 //Main memory (MM)
@@ -101,22 +100,19 @@ void PutBlockInCache(const int& set, const addr_t& key, const struct CacheBlock&
 void UpdateDirtyStatus(const std::string& op, const int& set, const addr_t& key);
 
 //Predicted write count (pwc) buffer
-std::queue<int> pwc_buffer;
+std::queue<int> pwc_buffer; 
 
 
 //Pattern buffer
-std::list<addr_t> pattern_buffer;
+std::list<std::pair<addr_t, int>> pattern_buffer; 
 
-void UpdatePattern(const addr_t& key);
+void UpdatePattern(const addr_t& key, const int& wc);
 
 extern addr_t mask_set;
 extern int total_predictions;
 extern int correct_predictions;
 extern unsigned int total_bandwidth;
 extern unsigned int write_bandwidth;
-
-extern int misses;
-
 extern unsigned int prediction_bandwidth;
 
 #endif	/* WC_PREDICTION_HPP */
